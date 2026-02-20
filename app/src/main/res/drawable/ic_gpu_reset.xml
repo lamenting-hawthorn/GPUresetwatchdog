@@ -1,0 +1,60 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="128dp"
+    android:height="128dp"
+    android:viewportWidth="128"
+    android:viewportHeight="128">
+
+    <!-- GPU Chip Body -->
+    <path
+        android:fillColor="@color/primary_color"
+        android:pathData="M20,20 L108,20 A8,8 0 0,1 116,28 L116,100 A8,8 0 0,1 108,108 L20,108 A8,8 0 0,1 12,100 L12,28 A8,8 0 0,1 20,20 Z" />
+
+    <!-- GPU Pins Left Side -->
+    <path
+        android:fillColor="@color/accent_color"
+        android:pathData="M0,35 L12,35 L12,39 L0,39 Z
+                         M0,45 L12,45 L12,49 L0,49 Z
+                         M0,55 L12,55 L12,59 L0,59 Z
+                         M0,65 L12,65 L12,69 L0,69 Z
+                         M0,75 L12,75 L12,79 L0,79 Z
+                         M0,85 L12,85 L12,89 L0,89 Z" />
+
+    <!-- GPU Pins Right Side -->
+    <path
+        android:fillColor="@color/accent_color"
+        android:pathData="M116,35 L128,35 L128,39 L116,39 Z
+                         M116,45 L128,45 L128,49 L116,49 Z
+                         M116,55 L128,55 L128,59 L116,59 Z
+                         M116,65 L128,65 L128,69 L116,69 Z
+                         M116,75 L128,75 L128,79 L116,79 Z
+                         M116,85 L128,85 L128,89 L116,89 Z" />
+
+    <!-- Central Processing Grid -->
+    <path
+        android:fillColor="@color/background_dark"
+        android:pathData="M30,30 L98,30 L98,98 L30,98 Z" />
+
+    <!-- Grid Lines Horizontal -->
+    <path
+        android:fillColor="@color/accent_color"
+        android:pathData="M30,42 L98,42 L98,43 L30,43 Z
+                         M30,54 L98,54 L98,55 L30,55 Z
+                         M30,66 L98,66 L98,67 L30,67 Z
+                         M30,78 L98,78 L98,79 L30,79 Z" />
+
+    <!-- Grid Lines Vertical -->
+    <path
+        android:fillColor="@color/accent_color"
+        android:pathData="M42,30 L43,30 L43,98 L42,98 Z
+                         M54,30 L55,30 L55,98 L54,98 Z
+                         M66,30 L67,30 L67,98 L66,98 Z
+                         M78,30 L79,30 L79,98 L78,98 Z" />
+
+    <!-- Reset Symbol (Circular Arrows) -->
+    <path
+        android:fillColor="@color/text_primary"
+        android:pathData="M64,50 A8,8 0 1,1 56,58 L58,56 L56,54 L64,50 Z" />
+    <path
+        android:fillColor="@color/text_primary"
+        android:pathData="M64,78 A8,8 0 1,1 72,70 L70,72 L72,74 L64,78 Z" />
+</vector>

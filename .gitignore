@@ -1,0 +1,21 @@
+*.iml
+.gradle
+/local.properties
+/.idea/
+!/.idea/codeStyles/
+.DS_Store
+**/.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+
+# Firebase & Google Services — contains API keys, never commit
+google-services.json
+
+# Signing keystores and credentials — never commit
+*.jks
+*.keystore
+
+# Claude Code local settings
+.claude/

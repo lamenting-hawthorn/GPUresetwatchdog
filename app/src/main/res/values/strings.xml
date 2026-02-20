@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GPU Reset Watchdog</string>
+    <string name="tile_label">GPU Stress Test</string>
+    <string name="tile_starting">Starting Stress Test…</string>
+    <string name="tile_content_description">Tap to start GPU stress test</string>
+
+    <!-- UI Text -->
+    <string name="app_title">GPU Reset Watchdog</string>
+    <string name="app_description">Temporarily stabilize GPU glitches
+through shader stress
+        sequences
+    </string>
+    <string name="reset_button">Reset GPU</string>
+    <string name="duration_info">Duration: 5 seconds
+Safe for all devices</string>
+    <string name="version">v1.0.0</string>
+
+    <!-- Status Messages -->
+    <string name="status_ready">GPU Reset Watchdog Ready</string>
+    <string name="status_processing">GPU Reset in Progress…</string>
+    <string name="status_completed">GPU reset completed successfully</string>
+    <string name="status_error">GPU reset failed - please try again</string>
+
+    <!-- Toast Messages -->
+    <string name="toast_starting">Starting GPU stress sequence</string>
+    <string name="toast_completed">GPU reset completed</string>
+    <string name="toast_already_running">GPU reset already in progress</string>
+    <string name="toast_opengl_error">OpenGL ES 3.0 not supported on this device</string>
+
+    <!-- Accessibility -->
+    <string name="icon_description">GPU Reset Watchdog Icon</string>
+    <string name="reset_button_description">Tap to start GPU reset sequence</string>
+
+    <!-- Help Text -->
+    <string name="help_title">How it works</string>
+    <string name="help_description">This app temporarily stabilizes GPU glitches by running
+        intensive shader sequences that force the GPU to refresh its pipeline. The process is
+        similar to what happens when you run a demanding game, but focused specifically on clearing
+        display artifacts.
+
+The reset sequence runs for 5 seconds and is safe for all devices. No
+        root access is required.
+    </string>
+
+    <!--
+        AdMob IDs — replace with your own from https://admob.google.com
+        For testing, use AdMob test IDs:
+          App ID:     ca-app-pub-3940256099942544~3347511713
+          Banner ID:  ca-app-pub-3940256099942544/6300978111
+    -->
+    <string name="admob_app_id">ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX</string>
+    <string name="banner_ad_unit_id">ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX</string>
+
+    <!-- Error Messages -->
+    <string name="error_opengl_init">Failed to initialize OpenGL ES</string>
+    <string name="error_shader_compilation">Shader compilation failed</string>
+    <string name="error_gpu_stress">GPU stress sequence encountered an error</string>
+</resources>
