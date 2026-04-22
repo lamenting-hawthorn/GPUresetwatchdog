@@ -1,10 +1,10 @@
 package com.raghav.gpuresetwatchdog
 
 import android.animation.ValueAnimator
+import android.app.ActivityManager
+import android.content.Context
 import android.content.pm.ActivityInfo
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.compose.setContent
@@ -15,13 +15,16 @@ import androidx.compose.runtime.setValue
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.lifecycleScope
 import com.raghav.gpuresetwatchdog.ui.MainScreen
 import com.google.android.gms.ads.MobileAds
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private var gpuStressView: GPUStressView? = null
-    private lateinit var handler: Handler
 
     private var isProcessing by mutableStateOf(false)
     private var statusText by mutableStateOf("")
@@ -29,13 +32,16 @@ class MainActivity : AppCompatActivity() {
 
     private val defaultDuration = 5000L // 5 seconds
     private var progressAnimator: ValueAnimator? = null
+    private var resetJob: Job? = null
+    private var statusResetJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        MobileAds.initialize(this) {}
+        MobileAds.initialize(this) { initializationStatus ->
+            android.util.Log.d("MainActivity", "AdMob init: $initializationStatus")
+        }
 
-        handler = Handler(Looper.getMainLooper())
         statusText = getString(R.string.status_ready)
 
         setContent {
@@ -54,15 +60,25 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (intent.getBooleanExtra("auto_start_reset", false)) {
-            handler.postDelayed({
+            lifecycleScope.launch {
+                delay(500)
                 if (!isProcessing) {
                     startGPUReset()
                 }
-            }, 500)
+            }
         }
     }
 
     private fun startGPUReset() {
+        // Runtime OpenGL ES 3.0 capability check — some OEMs incorrectly
+        // report support in the manifest filter.
+        val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val glEsVersion = am.deviceConfigurationInfo.reqGlEsVersion
+        if (glEsVersion < 0x30000) {
+            Toast.makeText(this, getString(R.string.toast_opengl_error), Toast.LENGTH_LONG).show()
+            return
+        }
+
         isProcessing = true
 
         progressAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
@@ -73,9 +89,10 @@ class MainActivity : AppCompatActivity() {
             start()
         }
 
-        handler.postDelayed({
+        resetJob = lifecycleScope.launch {
+            delay(defaultDuration)
             completeGPUReset()
-        }, defaultDuration)
+        }
 
         enterFullscreenMode()
         gpuStressView?.startStressSequence()
@@ -94,9 +111,10 @@ class MainActivity : AppCompatActivity() {
 
         Toast.makeText(this, getString(R.string.toast_completed), Toast.LENGTH_SHORT).show()
 
-        handler.postDelayed({
+        statusResetJob = lifecycleScope.launch {
+            delay(3000)
             statusText = getString(R.string.status_ready)
-        }, 3000)
+        }
     }
 
     private fun enterFullscreenMode() {
@@ -129,7 +147,8 @@ class MainActivity : AppCompatActivity() {
         gpuStressView?.onPause()
 
         if (isProcessing) {
-            handler.removeCallbacksAndMessages(null)
+            resetJob?.cancel()
+            statusResetJob?.cancel()
             progressAnimator?.cancel()
             completeGPUReset()
         }
@@ -137,7 +156,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        handler.removeCallbacksAndMessages(null)
+        resetJob?.cancel()
+        statusResetJob?.cancel()
         progressAnimator?.cancel()
     }
 }

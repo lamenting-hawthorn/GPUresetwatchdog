@@ -2,10 +2,18 @@ package com.raghav.gpuresetwatchdog.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// GPU/hardware-themed palette — dark-mode-first, tech identity
+val IndigoPrimary = Color(0xFF5C6BC0)     // Indigo 400
+val IndigoLight = Color(0xFF8E99F3)       // Indigo 200
+val IndigoDark = Color(0xFF26418F)        // Indigo 800
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val CyanAccent = Color(0xFF00E5FF)        // Electric Cyan
+val CyanAccentDark = Color(0xFF00B8D4)    // Cyan A700
+
+val SurfaceDark = Color(0xFF121212)       // Material dark surface
+val SurfaceCardDark = Color(0xFF1E1E1E)   // Slightly elevated card
+val SurfaceLight = Color(0xFFFAFAFA)      // Light mode surface
+
+val StatusReady = Color(0xFF66BB6A)       // Green 400
+val StatusProcessing = Color(0xFF42A5F5)  // Blue 400
+val StatusError = Color(0xFFEF5350)       // Red 400

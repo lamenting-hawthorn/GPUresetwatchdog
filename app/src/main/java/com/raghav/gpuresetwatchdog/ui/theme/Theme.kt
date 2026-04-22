@@ -17,15 +17,27 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = IndigoPrimary,
+    onPrimary = Color.White,
+    secondary = CyanAccent,
+    onSecondary = Color.Black,
+    tertiary = CyanAccentDark,
+    background = SurfaceDark,
+    surface = SurfaceCardDark,
+    onBackground = Color.White,
+    onSurface = Color.White
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = IndigoDark,
+    onPrimary = Color.White,
+    secondary = CyanAccentDark,
+    onSecondary = Color.White,
+    tertiary = IndigoPrimary,
+    background = SurfaceLight,
+    surface = Color.White,
+    onBackground = Color(0xFF1C1B1F),
+    onSurface = Color(0xFF1C1B1F)
 )
 
 @Composable
@@ -48,6 +60,11 @@ fun GPUResetWatchdogTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
+            // Use edge-to-edge transparent status bar.
+            // Note: window.statusBarColor is deprecated on API 35+ but still
+            // functional. On API 35+ the system ignores this value when
+            // edge-to-edge is enabled via enableEdgeToEdge().
+            @Suppress("DEPRECATION")
             window.statusBarColor = Color.Transparent.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }

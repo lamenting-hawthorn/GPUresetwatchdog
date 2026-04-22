@@ -11,7 +11,8 @@ import java.util.*
  */
 class PerformanceMonitor {
 
-    private val frameTimeHistory = ArrayList<Long>()
+    // ArrayDeque gives O(1) removeFirst vs ArrayList's O(n) removeAt(0)
+    private val frameTimeHistory = ArrayDeque<Long>()
     private val maxHistorySize = 300 // 5 seconds at 60fps
 
     private var frameStartTime = 0L
@@ -56,9 +57,9 @@ class PerformanceMonitor {
         val frameTimeNs = frameEndTime - frameStartTime
         val frameTimeMs = frameTimeNs / 1_000_000L
 
-        frameTimeHistory.add(frameTimeMs)
+        frameTimeHistory.addLast(frameTimeMs)
         if (frameTimeHistory.size > maxHistorySize) {
-            frameTimeHistory.removeAt(0)
+            frameTimeHistory.removeFirst()
         }
 
         totalFrames++

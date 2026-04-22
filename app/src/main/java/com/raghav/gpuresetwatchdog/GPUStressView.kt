@@ -10,6 +10,16 @@ import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
+
+/**
+ * Data class holding cached uniform locations for a shader program.
+ * Avoids per-frame glGetUniformLocation calls.
+ */
+private data class UniformLocations(
+    val time: Int,
+    val frame: Int,
+    val resolution: Int
+)
 class GPUStressView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
@@ -36,11 +46,16 @@ class GPUStressView @JvmOverloads constructor(
     inner class GPUStressRenderer : Renderer {
 
         private var shaderPrograms = mutableListOf<Int>()
+        private var uniformLocationsMap = mutableMapOf<Int, UniformLocations>()
         private var currentShaderIndex = 0
         private var frameCount = 0L
-        private var startTime = 0L
-        private var isStressing = false
+        @Volatile private var startTime = 0L
+        @Volatile private var isStressing = false
         private val performanceMonitor = PerformanceMonitor()
+
+        // Pre-allocated direct buffer for glReadPixels CPU/GPU sync point.
+        // Must be direct (not heap-backed) for OpenGL ES compatibility.
+        private val readPixelBuffer: ByteBuffer = ByteBuffer.allocateDirect(4)
 
         private val quadVertices = floatArrayOf(
             -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
@@ -99,13 +114,35 @@ class GPUStressView @JvmOverloads constructor(
         }
 
         private fun createShaderPrograms() {
-            shaderPrograms.add(createShaderProgram(vertexShader, geometryStressFragment))
-            shaderPrograms.add(createShaderProgram(vertexShader, textureStressFragment))
-            shaderPrograms.add(createShaderProgram(vertexShader, lightingStressFragment))
-            shaderPrograms.add(createShaderProgram(vertexShader, postProcessingStressFragment))
-            shaderPrograms.add(createShaderProgram(vertexShader, computeIntensiveFragment))
+            val shaderSources = listOf(
+                "Geometry Stress" to geometryStressFragment,
+                "Texture Stress" to textureStressFragment,
+                "Lighting Stress" to lightingStressFragment,
+                "Post-Processing Stress" to postProcessingStressFragment,
+                "Compute Intensive" to computeIntensiveFragment
+            )
 
-            Log.d("GPUStressRenderer", "Created ${shaderPrograms.size} shader programs")
+            for ((name, fragmentSource) in shaderSources) {
+                val program = createShaderProgram(vertexShader, fragmentSource)
+                if (program != 0) {
+                    shaderPrograms.add(program)
+                    // Cache uniform locations once per program — they're stable
+                    // for the lifetime of a linked program.
+                    uniformLocationsMap[program] = UniformLocations(
+                        time = GLES30.glGetUniformLocation(program, "u_time"),
+                        frame = GLES30.glGetUniformLocation(program, "u_frame"),
+                        resolution = GLES30.glGetUniformLocation(program, "u_resolution")
+                    )
+                } else {
+                    Log.e("GPUStressRenderer", "Failed to create shader program: $name")
+                }
+            }
+
+            Log.d("GPUStressRenderer", "Created ${shaderPrograms.size}/${shaderSources.size} shader programs")
+
+            if (shaderPrograms.isEmpty()) {
+                Log.e("GPUStressRenderer", "FATAL: All shader programs failed to compile/link")
+            }
         }
 
         override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
@@ -113,9 +150,9 @@ class GPUStressView @JvmOverloads constructor(
 
             shaderPrograms.forEach { program ->
                 GLES30.glUseProgram(program)
-                val resolutionLocation = GLES30.glGetUniformLocation(program, "u_resolution")
-                if (resolutionLocation != -1) {
-                    GLES30.glUniform2f(resolutionLocation, width.toFloat(), height.toFloat())
+                val locs = uniformLocationsMap[program]
+                if (locs != null && locs.resolution != -1) {
+                    GLES30.glUniform2f(locs.resolution, width.toFloat(), height.toFloat())
                 }
             }
         }
@@ -127,7 +164,7 @@ class GPUStressView @JvmOverloads constructor(
 
             GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT or GLES30.GL_DEPTH_BUFFER_BIT)
 
-            if (!isStressing) return
+            if (!isStressing || shaderPrograms.isEmpty()) return
 
             frameCount++
             val currentTime = System.currentTimeMillis()
@@ -149,9 +186,15 @@ class GPUStressView @JvmOverloads constructor(
             GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4)
             GLES30.glBindVertexArray(0)
 
+            // CPU/GPU synchronization point: glReadPixels forces the driver to
+            // drain all pending GPU work. This is the core flush mechanism.
             if (frameCount % 10 == 0L) {
-                val pixel = ByteArray(4)
-                GLES30.glReadPixels(0, 0, 1, 1, GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, ByteBuffer.wrap(pixel))
+                readPixelBuffer.clear()
+                GLES30.glReadPixels(
+                    0, 0, 1, 1,
+                    GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE,
+                    readPixelBuffer
+                )
             }
 
             if (isStressing) {
@@ -160,16 +203,16 @@ class GPUStressView @JvmOverloads constructor(
         }
 
         private fun updateUniforms(program: Int, currentTime: Long) {
+            val locs = uniformLocationsMap[program] ?: return
             val time = (currentTime - startTime) / 1000.0f
 
-            val timeLocation = GLES30.glGetUniformLocation(program, "u_time")
-            if (timeLocation != -1) {
-                GLES30.glUniform1f(timeLocation, time)
+            if (locs.time != -1) {
+                GLES30.glUniform1f(locs.time, time)
             }
 
-            val frameLocation = GLES30.glGetUniformLocation(program, "u_frame")
-            if (frameLocation != -1) {
-                GLES30.glUniform1i(frameLocation, frameCount.toInt())
+            if (locs.frame != -1) {
+                // Prevent Int overflow for long-running sessions
+                GLES30.glUniform1i(locs.frame, (frameCount % Int.MAX_VALUE).toInt())
             }
         }
 
@@ -192,6 +235,7 @@ class GPUStressView @JvmOverloads constructor(
                     if (program != 0) GLES30.glDeleteProgram(program)
                 }
                 shaderPrograms.clear()
+                uniformLocationsMap.clear()
             }
             if (vbo != 0) {
                 GLES30.glDeleteBuffers(1, intArrayOf(vbo), 0)

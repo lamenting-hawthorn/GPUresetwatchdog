@@ -25,6 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -112,6 +114,9 @@ private fun InitialState(
             modifier = Modifier
                 .width(200.dp)
                 .height(60.dp)
+                .semantics {
+                    contentDescription = "Tap to start GPU reset sequence"
+                }
         ) {
             Text(
                 text = stringResource(id = R.string.reset_button),
@@ -178,6 +183,13 @@ fun BannerAd(modifier: Modifier = Modifier) {
                     context.getString(R.string.banner_ad_unit_id)
                 }
                 loadAd(AdRequest.Builder().build())
+            }
+        },
+        onRelease = { adView ->
+            try {
+                adView.destroy()
+            } catch (e: Exception) {
+                // AdView.destroy() can occasionally throw; safe to ignore.
             }
         }
     )

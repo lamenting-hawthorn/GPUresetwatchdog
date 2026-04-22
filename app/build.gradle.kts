@@ -93,11 +93,11 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     // Firebase Dependencies
-    implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
-    implementation("com.google.firebase:firebase-analytics")
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
 
     // Google Mobile Ads SDK
-    implementation("com.google.android.gms:play-services-ads:24.8.0")
+    implementation(libs.play.services.ads)
 
     // Testing dependencies
     testImplementation(libs.junit)
