@@ -124,7 +124,7 @@ class PerformanceMonitor {
 
     private fun logCurrentPerformance() {
         if (frameTimeHistory.size >= 60) {
-            val recent = frameTimeHistory.takeLast(60)
+            val recent = frameTimeHistory.toList().takeLast(60)
             val avgFPS = 1000f / (recent.average().toFloat())
             val minFrameTime = recent.minOrNull()?.toFloat() ?: 0f
             val maxFPS = if (minFrameTime > 0) 1000f / minFrameTime else 0f
